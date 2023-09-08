@@ -17,11 +17,12 @@
 package com.google.samples.apps.nowinandroid.feature.foryou
 
 import androidx.lifecycle.SavedStateHandle
+import com.google.samples.apps.nowinandroid.core.analytics.AnalyticsEvent
+import com.google.samples.apps.nowinandroid.core.analytics.AnalyticsEvent.Param
 import com.google.samples.apps.nowinandroid.core.data.repository.CompositeUserNewsResourceRepository
 import com.google.samples.apps.nowinandroid.core.domain.GetFollowableTopicsUseCase
 import com.google.samples.apps.nowinandroid.core.model.data.FollowableTopic
 import com.google.samples.apps.nowinandroid.core.model.data.NewsResource
-import com.google.samples.apps.nowinandroid.core.model.data.NewsResourceType.Video
 import com.google.samples.apps.nowinandroid.core.model.data.Topic
 import com.google.samples.apps.nowinandroid.core.model.data.UserNewsResource
 import com.google.samples.apps.nowinandroid.core.model.data.mapToUserNewsResources
@@ -30,6 +31,7 @@ import com.google.samples.apps.nowinandroid.core.testing.repository.TestTopicsRe
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestUserDataRepository
 import com.google.samples.apps.nowinandroid.core.testing.repository.emptyUserData
 import com.google.samples.apps.nowinandroid.core.testing.util.MainDispatcherRule
+import com.google.samples.apps.nowinandroid.core.testing.util.TestAnalyticsHelper
 import com.google.samples.apps.nowinandroid.core.testing.util.TestSyncManager
 import com.google.samples.apps.nowinandroid.core.ui.NewsFeedUiState
 import com.google.samples.apps.nowinandroid.feature.foryou.navigation.LINKED_NEWS_RESOURCE_ID
@@ -44,6 +46,7 @@ import org.junit.Rule
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * To learn more about how this test handles Flows created with stateIn, see
@@ -54,6 +57,7 @@ class ForYouViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private val syncManager = TestSyncManager()
+    private val analyticsHelper = TestAnalyticsHelper()
     private val userDataRepository = TestUserDataRepository()
     private val topicsRepository = TestTopicsRepository()
     private val newsRepository = TestNewsRepository()
@@ -74,6 +78,7 @@ class ForYouViewModelTest {
         viewModel = ForYouViewModel(
             syncManager = syncManager,
             savedStateHandle = savedStateHandle,
+            analyticsHelper = analyticsHelper,
             userDataRepository = userDataRepository,
             userNewsResourceRepository = userNewsResourceRepository,
             getFollowableTopics = getFollowableTopicsUseCase,
@@ -253,7 +258,6 @@ class ForYouViewModelTest {
         assertEquals(
             NewsFeedUiState.Success(
                 feed = emptyList(),
-
             ),
             viewModel.feedState.value,
         )
@@ -484,6 +488,20 @@ class ForYouViewModelTest {
             viewModel.deepLinkedNewsResource.value,
         )
 
+        assertTrue(
+            analyticsHelper.hasLogged(
+                AnalyticsEvent(
+                    type = "news_deep_link_opened",
+                    extras = listOf(
+                        Param(
+                            key = LINKED_NEWS_RESOURCE_ID,
+                            value = sampleNewsResources.first().id,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
         collectJob.cancel()
     }
 }
@@ -526,7 +544,7 @@ private val sampleNewsResources = listOf(
         url = "https://youtu.be/-fJ6poHQrjM",
         headerImageUrl = "https://i.ytimg.com/vi/-fJ6poHQrjM/maxresdefault.jpg",
         publishDate = Instant.parse("2021-11-09T00:00:00.000Z"),
-        type = Video,
+        type = "Video 📺",
         topics = listOf(
             Topic(
                 id = "0",
@@ -547,7 +565,7 @@ private val sampleNewsResources = listOf(
         url = "https://youtu.be/ZARz0pjm5YM",
         headerImageUrl = "https://i.ytimg.com/vi/ZARz0pjm5YM/maxresdefault.jpg",
         publishDate = Instant.parse("2021-11-01T00:00:00.000Z"),
-        type = Video,
+        type = "Video 📺",
         topics = listOf(
             Topic(
                 id = "1",
@@ -566,7 +584,7 @@ private val sampleNewsResources = listOf(
         url = "https://youtu.be/r5JgIyS3t3s",
         headerImageUrl = "https://i.ytimg.com/vi/r5JgIyS3t3s/maxresdefault.jpg",
         publishDate = Instant.parse("2021-11-08T00:00:00.000Z"),
-        type = Video,
+        type = "Video 📺",
         topics = listOf(
             Topic(
                 id = "1",

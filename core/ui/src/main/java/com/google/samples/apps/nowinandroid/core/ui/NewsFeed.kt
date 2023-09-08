@@ -57,7 +57,11 @@ fun LazyGridScope.newsFeed(
     when (feedState) {
         NewsFeedUiState.Loading -> Unit
         is NewsFeedUiState.Success -> {
-            items(feedState.feed, key = { it.id }) { userNewsResource ->
+            items(
+                items = feedState.feed,
+                key = { it.id },
+                contentType = { "newsFeedItem" },
+            ) { userNewsResource ->
                 val resourceUrl by remember {
                     mutableStateOf(Uri.parse(userNewsResource.url))
                 }
@@ -108,7 +112,7 @@ sealed interface NewsFeedUiState {
     /**
      * The feed is still loading.
      */
-    object Loading : NewsFeedUiState
+    data object Loading : NewsFeedUiState
 
     /**
      * The feed is loaded with the given list of news resources.

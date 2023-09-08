@@ -15,7 +15,7 @@ follows Android design and development best practices and is intended to be a us
 for developers. As a running app, it's intended to help developers keep up-to-date with the world
 of Android development by providing regular news updates.
 
-The app is currently in development. The `demoRelease` variant is [available on the Play Store in open beta](https://play.google.com/store/apps/details?id=com.google.samples.apps.nowinandroid).
+The app is currently in development. The `prodRelease` variant is [available on the Play Store](https://play.google.com/store/apps/details?id=com.google.samples.apps.nowinandroid).
 
 # Features
 
@@ -44,11 +44,6 @@ Once you're up and running, you can refer to the learning journeys below to get 
 understanding of which libraries and tools are being used, the reasoning behind the approaches to
 UI, testing, architecture and more, and how all of these different pieces of the project fit
 together to create a complete app.
-
-NOTE: Building the app using an M1 Mac will require the use of
-[Rosetta](https://support.apple.com/en-gb/HT211861). See
-[the following bug](https://github.com/protocolbuffers/protobuf/issues/9397#issuecomment-1086138036)
-for more details.
 
 # Architecture
 
@@ -114,6 +109,13 @@ Examples:
   manipulate the state of the `Test` repository and verify the resulting behavior, instead of
   checking that specific repository methods were called.
 
+## Screenshot tests
+
+**Now In Android** uses [Roborazzi](https://github.com/takahirom/roborazzi) to do screenshot tests
+of certain screens and components. To run these tests, run the `verifyRoborazziDemoDebug` or
+`recordRoborazziDemoDebug` tasks. Note that screenshots are recorded on CI, using Linux, and other
+platforms might generate slightly different images, making the tests fail.
+
 # UI
 The app was designed using [Material 3 guidelines](https://m3.material.io/). Learn more about the design process and 
 obtain the design files in the [Now in Android Material 3 Case Study](https://goo.gle/nia-figma) (design assets [also available as a PDF](docs/Now-In-Android-Design-File.pdf)).
@@ -145,7 +147,8 @@ The baseline profile for this app is located at [`app/src/main/baseline-prof.txt
 It contains rules that enable AOT compilation of the critical user path taken during app launch.
 For more information on baseline profiles, read [this document](https://developer.android.com/studio/profile/baselineprofiles).
 
-> Note: The baseline profile needs to be re-generated for release builds that touch code which changes app startup.
+> [!NOTE]
+> The baseline profile needs to be re-generated for release builds that touch code which changes app startup.
 
 To generate the baseline profile, select the `benchmark` build variant and run the
 `BaselineProfileGenerator` benchmark test on an AOSP Android Emulator.
@@ -155,12 +158,12 @@ Then copy the resulting baseline profile from the emulator to [`app/src/main/bas
 
 Run the following command to get and analyse compose compiler metrics:
 
-```
+```bash
 ./gradlew assembleRelease -PenableComposeCompilerMetrics=true -PenableComposeCompilerReports=true
 ```
 
-The reports files will be added to build/compose-reports in each module. The metrics files will be 
-added to build/compose-metrics in each module.
+The reports files will be added to [build/compose-reports](build/compose-reports). The metrics files will also be 
+added to [build/compose-metrics](build/compose-metrics).
 
 For more information on Compose compiler metrics, see [this blog post](https://medium.com/androiddevelopers/jetpack-compose-stability-explained-79c10db270c8).
 

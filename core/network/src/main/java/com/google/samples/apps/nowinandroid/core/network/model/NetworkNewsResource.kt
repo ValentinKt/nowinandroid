@@ -17,9 +17,6 @@
 package com.google.samples.apps.nowinandroid.core.network.model
 
 import com.google.samples.apps.nowinandroid.core.model.data.NewsResource
-import com.google.samples.apps.nowinandroid.core.model.data.NewsResourceType
-import com.google.samples.apps.nowinandroid.core.network.model.util.InstantSerializer
-import com.google.samples.apps.nowinandroid.core.network.model.util.NewsResourceTypeSerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
@@ -33,10 +30,8 @@ data class NetworkNewsResource(
     val content: String,
     val url: String,
     val headerImageUrl: String,
-    @Serializable(InstantSerializer::class)
     val publishDate: Instant,
-    @Serializable(NewsResourceTypeSerializer::class)
-    val type: NewsResourceType,
+    val type: String,
     val topics: List<String> = listOf(),
 )
 
@@ -50,9 +45,7 @@ data class NetworkNewsResourceExpanded(
     val content: String,
     val url: String,
     val headerImageUrl: String,
-    @Serializable(InstantSerializer::class)
     val publishDate: Instant,
-    @Serializable(NewsResourceTypeSerializer::class)
-    val type: NewsResourceType,
+    val type: String,
     val topics: List<NetworkTopic> = listOf(),
 )

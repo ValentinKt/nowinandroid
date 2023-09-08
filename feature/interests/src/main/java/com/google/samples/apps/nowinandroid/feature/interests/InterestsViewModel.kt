@@ -47,17 +47,17 @@ class InterestsViewModel @Inject constructor(
 
     fun followTopic(followedTopicId: String, followed: Boolean) {
         viewModelScope.launch {
-            userDataRepository.toggleFollowedTopicId(followedTopicId, followed)
+            userDataRepository.setTopicIdFollowed(followedTopicId, followed)
         }
     }
 }
 
 sealed interface InterestsUiState {
-    object Loading : InterestsUiState
+    data object Loading : InterestsUiState
 
     data class Interests(
         val topics: List<FollowableTopic>,
     ) : InterestsUiState
 
-    object Empty : InterestsUiState
+    data object Empty : InterestsUiState
 }

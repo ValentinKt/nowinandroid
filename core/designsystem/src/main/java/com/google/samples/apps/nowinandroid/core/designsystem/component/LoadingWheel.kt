@@ -55,7 +55,7 @@ fun NiaLoadingWheel(
     contentDesc: String,
     modifier: Modifier = Modifier,
 ) {
-    val infiniteTransition = rememberInfiniteTransition()
+    val infiniteTransition = rememberInfiniteTransition(label = "wheel transition")
 
     // Specifies the float animation for slowly drawing out the lines on entering
     val startValue = if (LocalInspectionMode.current) 0F else 1F
@@ -82,11 +82,13 @@ fun NiaLoadingWheel(
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = ROTATION_TIME, easing = LinearEasing),
         ),
+        label = "wheel rotation animation",
     )
 
     // Specifies the color animation for the base-to-progress line color change
     val baseLineColor = MaterialTheme.colorScheme.onBackground
     val progressLineColor = MaterialTheme.colorScheme.inversePrimary
+
     val colorAnimValues = (0 until NUM_OF_LINES).map { index ->
         infiniteTransition.animateColor(
             initialValue = baseLineColor,
@@ -100,6 +102,7 @@ fun NiaLoadingWheel(
                 repeatMode = RepeatMode.Restart,
                 initialStartOffset = StartOffset(ROTATION_TIME / NUM_OF_LINES / 2 * index),
             ),
+            label = "wheel color animation",
         )
     }
 
