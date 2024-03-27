@@ -16,14 +16,15 @@
 import com.google.samples.apps.nowinandroid.NiaBuildType
 
 plugins {
-    id("nowinandroid.android.application")
-    id("nowinandroid.android.application.compose")
-    id("nowinandroid.android.application.flavors")
-    id("nowinandroid.android.application.jacoco")
-    id("nowinandroid.android.hilt")
-    id("jacoco")
-    id("nowinandroid.android.application.firebase")
+    alias(libs.plugins.nowinandroid.android.application)
+    alias(libs.plugins.nowinandroid.android.application.compose)
+    alias(libs.plugins.nowinandroid.android.application.flavors)
+    alias(libs.plugins.nowinandroid.android.application.jacoco)
+    alias(libs.plugins.nowinandroid.android.hilt)
+    alias(libs.plugins.nowinandroid.android.application.firebase)
     id("com.google.android.gms.oss-licenses-plugin")
+    alias(libs.plugins.baselineprofile)
+    alias(libs.plugins.roborazzi)
 }
 
 android {
@@ -43,7 +44,7 @@ android {
         debug {
             applicationIdSuffix = NiaBuildType.DEBUG.applicationIdSuffix
         }
-        val release by getting {
+        release {
             isMinifyEnabled = true
             applicationIdSuffix = NiaBuildType.RELEASE.applicationIdSuffix
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -51,18 +52,9 @@ android {
             // To publish on the Play store a private signing key is required, but to allow anyone
             // who clones the code to sign and run the release variant, use the debug signing key.
             // TODO: Abstract the signing configuration to a separate file to avoid hardcoding this.
-            signingConfig = signingConfigs.getByName("debug")
-        }
-        create("benchmark") {
-            // Enable all the optimizations from release build through initWith(release).
-            initWith(release)
-            matchingFallbacks.add("release")
-            // Debug key signing is available to everyone.
-            signingConfig = signingConfigs.getByName("debug")
-            // Only use benchmark proguard rules
-            proguardFiles("benchmark-rules.pro")
-            isMinifyEnabled = true
-            applicationIdSuffix = NiaBuildType.BENCHMARK.applicationIdSuffix
+            signingConfig = signingConfigs.named("debug").get()
+            // Ensure Baseline Profile is fresh for release builds.
+            baselineProfile.automaticGenerationDuringBuild = true
         }
     }
 
@@ -80,56 +72,71 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:interests"))
-    implementation(project(":feature:foryou"))
-    implementation(project(":feature:bookmarks"))
-    implementation(project(":feature:topic"))
-    implementation(project(":feature:search"))
-    implementation(project(":feature:settings"))
+    implementation(projects.feature.interests)
+    implementation(projects.feature.foryou)
+    implementation(projects.feature.bookmarks)
+    implementation(projects.feature.topic)
+    implementation(projects.feature.search)
+    implementation(projects.feature.settings)
 
-    implementation(project(":core:common"))
-    implementation(project(":core:ui"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:data"))
-    implementation(project(":core:model"))
-    implementation(project(":core:analytics"))
-
-    implementation(project(":sync:work"))
-
-    androidTestImplementation(project(":core:testing"))
-    androidTestImplementation(project(":core:datastore-test"))
-    androidTestImplementation(project(":core:data-test"))
-    androidTestImplementation(project(":core:network"))
-    androidTestImplementation(libs.androidx.navigation.testing)
-    androidTestImplementation(libs.accompanist.testharness)
-    androidTestImplementation(kotlin("test"))
-    debugImplementation(libs.androidx.compose.ui.testManifest)
-    debugImplementation(project(":ui-test-hilt-manifest"))
+    implementation(projects.core.common)
+    implementation(projects.core.ui)
+    implementation(projects.core.designsystem)
+    implementation(projects.core.data)
+    implementation(projects.core.model)
+    implementation(projects.core.analytics)
+    implementation(projects.sync.work)
 
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.compose.material3.adaptive)
+    implementation(libs.androidx.compose.material3.adaptive.layout)
+    implementation(libs.androidx.compose.material3.adaptive.navigation)
+    implementation(libs.androidx.compose.material3.windowSizeClass)
+    implementation(libs.androidx.compose.runtime.tracing)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
-    implementation(libs.androidx.compose.runtime)
-    implementation(libs.androidx.lifecycle.runtimeCompose)
-    implementation(libs.androidx.compose.runtime.tracing)
-    implementation(libs.androidx.compose.material3.windowSizeClass)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.lifecycle.runtimeCompose)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.window.manager)
     implementation(libs.androidx.profileinstaller)
+    implementation(libs.androidx.tracing.ktx)
     implementation(libs.kotlinx.coroutines.guava)
     implementation(libs.coil.kt)
 
-    // Core functions
-    testImplementation(project(":core:testing"))
-    testImplementation(project(":core:datastore-test"))
-    testImplementation(project(":core:data-test"))
-    testImplementation(project(":core:network"))
-    testImplementation(libs.androidx.navigation.testing)
-    testImplementation(libs.accompanist.testharness)
-    testImplementation(kotlin("test"))
-    implementation(libs.work.testing)
-    kaptTest(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
+    debugImplementation(libs.androidx.compose.ui.testManifest)
+    debugImplementation(projects.uiTestHiltManifest)
+
+    kspTest(libs.hilt.compiler)
+
+    testImplementation(projects.core.dataTest)
+    testImplementation(projects.core.testing)
+    testImplementation(libs.accompanist.testharness)
+    testImplementation(libs.hilt.android.testing)
+    testImplementation(libs.work.testing)
+
+    testDemoImplementation(libs.robolectric)
+    testDemoImplementation(libs.roborazzi)
+    testDemoImplementation(projects.core.screenshotTesting)
+
+    androidTestImplementation(projects.core.testing)
+    androidTestImplementation(projects.core.dataTest)
+    androidTestImplementation(projects.core.datastoreTest)
+    androidTestImplementation(libs.androidx.test.espresso.core)
+    androidTestImplementation(libs.androidx.navigation.testing)
+    androidTestImplementation(libs.accompanist.testharness)
+    androidTestImplementation(libs.hilt.android.testing)
+
+    baselineProfile(projects.benchmarks)
+}
+
+baselineProfile {
+    // Don't build on every iteration of a full assemble.
+    // Instead enable generation directly for the release build variant.
+    automaticGenerationDuringBuild = false
+}
+
+dependencyGuard {
+    configuration("prodReleaseRuntimeClasspath")
 }

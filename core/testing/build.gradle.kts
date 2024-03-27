@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 plugins {
-    id("nowinandroid.android.library")
-    id("nowinandroid.android.library.compose")
-    id("nowinandroid.android.hilt")
+    alias(libs.plugins.nowinandroid.android.library)
+    alias(libs.plugins.nowinandroid.android.library.compose)
+    alias(libs.plugins.nowinandroid.android.hilt)
 }
 
 android {
@@ -24,28 +24,19 @@ android {
 }
 
 dependencies {
-    api(libs.accompanist.testharness)
-    api(libs.androidx.activity.compose)
+    api(kotlin("test"))
     api(libs.androidx.compose.ui.test)
-    api(libs.androidx.test.core)
-    api(libs.androidx.test.espresso.core)
-    api(libs.androidx.test.rules)
-    api(libs.androidx.test.runner)
-    api(libs.hilt.android.testing)
-    api(libs.junit4)
-    api(libs.kotlinx.coroutines.test)
-    api(libs.roborazzi)
-    api(libs.robolectric.shadows)
-    api(libs.turbine)
+    api(projects.core.analytics)
+    api(projects.core.data)
+    api(projects.core.model)
+    api(projects.core.notifications)
 
     debugApi(libs.androidx.compose.ui.testManifest)
 
-    implementation(project(":core:common"))
-    implementation(project(":core:data"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:domain"))
-    implementation(project(":core:model"))
-    implementation(project(":core:notifications"))
-    implementation(project(":core:analytics"))
+    implementation(libs.androidx.test.rules)
+    implementation(libs.hilt.android.testing)
+    implementation(libs.kotlinx.coroutines.test)
     implementation(libs.kotlinx.datetime)
+    implementation(projects.core.common)
+    implementation(projects.core.designsystem)
 }
