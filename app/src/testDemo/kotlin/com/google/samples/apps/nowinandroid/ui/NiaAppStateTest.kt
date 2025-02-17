@@ -16,15 +16,11 @@
 
 package com.google.samples.apps.nowinandroid.ui
 
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.ComposeNavigator
 import androidx.navigation.compose.composable
@@ -35,6 +31,8 @@ import com.google.samples.apps.nowinandroid.core.testing.repository.TestNewsRepo
 import com.google.samples.apps.nowinandroid.core.testing.repository.TestUserDataRepository
 import com.google.samples.apps.nowinandroid.core.testing.util.TestNetworkMonitor
 import com.google.samples.apps.nowinandroid.core.testing.util.TestTimeZoneMonitor
+import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.HiltTestApplication
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -42,17 +40,18 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.TimeZone
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
  * Tests [NiaAppState].
- *
- * Note: This could become an unit test if Robolectric is added to the project and the Context
- * is faked.
  */
-@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(application = HiltTestApplication::class)
+@HiltAndroidTest
 class NiaAppStateTest {
 
     @get:Rule
@@ -79,7 +78,6 @@ class NiaAppStateTest {
                 NiaAppState(
                     navController = navController,
                     coroutineScope = backgroundScope,
-                    windowSizeClass = getCompactWindowClass(),
                     networkMonitor = networkMonitor,
                     userNewsResourceRepository = userNewsResourceRepository,
                     timeZoneMonitor = timeZoneMonitor,
@@ -102,7 +100,6 @@ class NiaAppStateTest {
     fun niaAppState_destinations() = runTest {
         composeTestRule.setContent {
             state = rememberNiaAppState(
-                windowSizeClass = getCompactWindowClass(),
                 networkMonitor = networkMonitor,
                 userNewsResourceRepository = userNewsResourceRepository,
                 timeZoneMonitor = timeZoneMonitor,
@@ -116,63 +113,11 @@ class NiaAppStateTest {
     }
 
     @Test
-    fun niaAppState_showBottomBar_compact() = runTest {
-        composeTestRule.setContent {
-            state = NiaAppState(
-                navController = NavHostController(LocalContext.current),
-                coroutineScope = backgroundScope,
-                windowSizeClass = getCompactWindowClass(),
-                networkMonitor = networkMonitor,
-                userNewsResourceRepository = userNewsResourceRepository,
-                timeZoneMonitor = timeZoneMonitor,
-            )
-        }
-
-        assertTrue(state.shouldShowBottomBar)
-        assertFalse(state.shouldShowNavRail)
-    }
-
-    @Test
-    fun niaAppState_showNavRail_medium() = runTest {
-        composeTestRule.setContent {
-            state = NiaAppState(
-                navController = NavHostController(LocalContext.current),
-                coroutineScope = backgroundScope,
-                windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(800.dp, 800.dp)),
-                networkMonitor = networkMonitor,
-                userNewsResourceRepository = userNewsResourceRepository,
-                timeZoneMonitor = timeZoneMonitor,
-            )
-        }
-
-        assertTrue(state.shouldShowNavRail)
-        assertFalse(state.shouldShowBottomBar)
-    }
-
-    @Test
-    fun niaAppState_showNavRail_large() = runTest {
-        composeTestRule.setContent {
-            state = NiaAppState(
-                navController = NavHostController(LocalContext.current),
-                coroutineScope = backgroundScope,
-                windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(900.dp, 1200.dp)),
-                networkMonitor = networkMonitor,
-                userNewsResourceRepository = userNewsResourceRepository,
-                timeZoneMonitor = timeZoneMonitor,
-            )
-        }
-
-        assertTrue(state.shouldShowNavRail)
-        assertFalse(state.shouldShowBottomBar)
-    }
-
-    @Test
     fun niaAppState_whenNetworkMonitorIsOffline_StateIsOffline() = runTest(UnconfinedTestDispatcher()) {
         composeTestRule.setContent {
             state = NiaAppState(
                 navController = NavHostController(LocalContext.current),
                 coroutineScope = backgroundScope,
-                windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(900.dp, 1200.dp)),
                 networkMonitor = networkMonitor,
                 userNewsResourceRepository = userNewsResourceRepository,
                 timeZoneMonitor = timeZoneMonitor,
@@ -193,7 +138,6 @@ class NiaAppStateTest {
             state = NiaAppState(
                 navController = NavHostController(LocalContext.current),
                 coroutineScope = backgroundScope,
-                windowSizeClass = getCompactWindowClass(),
                 networkMonitor = networkMonitor,
                 userNewsResourceRepository = userNewsResourceRepository,
                 timeZoneMonitor = timeZoneMonitor,
@@ -207,8 +151,6 @@ class NiaAppStateTest {
             state.currentTimeZone.value,
         )
     }
-
-    private fun getCompactWindowClass() = WindowSizeClass.calculateFromSize(DpSize(500.dp, 300.dp))
 }
 
 @Composable
